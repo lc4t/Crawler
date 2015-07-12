@@ -51,7 +51,11 @@ def init(username,password,sleepTime = 600):
     mail_pass=raw_input("mailPassword:")
     mail_postfix=raw_input("mailPostfix, qq.com:")
     while(True):
-        Crawler.init(username,password)
+        try:
+            Crawler.init(username,password)
+        except Exception as e:
+            print (e)
+            continue
         new = open(fileNew, 'U').readlines()
         try:
             old = open(fileOld, 'r').readlines()
