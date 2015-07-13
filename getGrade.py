@@ -7,6 +7,7 @@ from email.mime.text import MIMEText
 import Crawler
 import time
 import filecmp
+import re
 class sendMail:
     def __init__(self,content,mailTo,mailHost,mailUser,mailPassword,mailPosfix):
         print ("mailing")
@@ -15,8 +16,7 @@ class sendMail:
         # self.mail_user="lpylzx1@qq.com"    #用户名
         # self.mail_pass=""   #口令
         # self.mail_postfix="qq.com"  #发件箱的后缀
-        mailTo = mailTo.split(' |,')
-        self.mailto_list = mailTo
+        self.mailto_list = re.split(',| ',mailTo)
         self.mail_host = mailHost  #设置服务器
         self.mail_user = mailUser    #用户名
         self.mail_pass = mailPassword  #口令
@@ -38,6 +38,7 @@ class sendMail:
             server.connect(self.mail_host)
             server.login(self.mail_user,self.mail_pass)
             server.sendmail(me, to_list, msg.as_string())
+            print to_list
             server.close()
             return True
         except Exception, e:
