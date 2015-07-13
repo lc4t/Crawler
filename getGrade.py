@@ -15,15 +15,18 @@ class sendMail:
         # self.mail_user="lpylzx1@qq.com"    #用户名
         # self.mail_pass=""   #口令
         # self.mail_postfix="qq.com"  #发件箱的后缀
-        self.mailto_list = [mailTo]
+        mailTo = mailTo.split(' |,')
+        self.mailto_list = mailTo
         self.mail_host = mailHost  #设置服务器
         self.mail_user = mailUser    #用户名
         self.mail_pass = mailPassword  #口令
         self.mail_postfix = mailPosfix  #发件箱的后缀
         if self.send_mail(self.mailto_list,"new grades",content):
-            print "发送成功"
+            print "发送成功",
+            print time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
         else:
-            print "发送失败"
+            print "发送失败",
+            print time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
     def send_mail(self,to_list,sub,content):
         me="Grades"+"<"+self.mail_user+"@"+self.mail_postfix+">"
         msg = MIMEText(content,_subtype='plain',_charset='utf-8')
@@ -42,14 +45,21 @@ class sendMail:
             return False
 
 
-def init(username,password,sleepTime = 600):
+def init(username,password,sleepTime = 600,configList = None):
     fileOld = 'old'+username+'.txt'
     fileNew = 'new'+username+'.txt'
-    mailto_list=raw_input("to email address, lc4t0.0@gmail.com:")
-    mail_host=raw_input("smtp server,  smtp.qq.com:")
-    mail_user=raw_input("mailUser,  lpylzx1@qq.com:")
-    mail_pass=raw_input("mailPassword:")
-    mail_postfix=raw_input("mailPostfix, qq.com:")
+    if (configList):
+        mailto_list = str(configList[3].strip('\n'))
+        mail_host = str(configList[4].strip('\n'))
+        mail_user = str(configList[5].strip('\n'))
+        mail_pass = str(configList[6].strip('\n'))
+        mail_postfix = str(configList[7].strip('\n'))
+    else:
+        mailto_list = raw_input("to email address, lc4t0.0@gmail.com:")
+        mail_host = raw_input("smtp server,  smtp.qq.com:")
+        mail_user = raw_input("mailUser,  lpylzx1@qq.com:")
+        mail_pass = raw_input("mailPassword:")
+        mail_postfix = raw_input("mailPostfix, qq.com:")
     while(True):
         try:
             Crawler.init(username,password)
@@ -76,11 +86,23 @@ def init(username,password,sleepTime = 600):
             old.writelines(new.readlines())
         else:
             print "same"
-        print "sleeping..."
+        print "sleeping...@",
+        print time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
         time.sleep(sleepTime)
 
 if __name__ == '__main__':
-    username = raw_input("input your username:")
-    password = raw_input("input your password:")
-    sleepTime = int(raw_input("input sleep time，600:"))
-    init(username,password,sleepTime)
+    existConfigFile = raw_input("your config File:")
+    try:
+        configList = open(existConfigFile,'rU').readlines()
+    except:
+        configList = []
+
+    if (configList):
+        username = str(configList[0].strip('\n'))
+        password = str(configList[1].strip('\n'))
+        sleepTime = int(configList[2].strip('\n'))
+    else:
+        username = raw_input("input your username:")
+        password = raw_input("input your password:")
+        sleepTime = int(raw_input("input sleep time，600:"))
+    init(username,password,sleepTime,configList)
