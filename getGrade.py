@@ -76,7 +76,7 @@ def init(username,password,sleepTime = 600,configList = None):
 
         if (not (filecmp.cmp(fileOld,fileNew))):
             print "not same"
-            content = ""
+            content = 'studentID= ' + username + ' \n'
             for i in diff:
                 content += i
             print content
