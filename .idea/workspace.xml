@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="BookmarkManager">
-    <bookmark url="file://$PROJECT_DIR$/Crawler.py" line="354" />
+    <bookmark url="file://$PROJECT_DIR$/Crawler.py" line="353" />
     <bookmark url="file://$PROJECT_DIR$/Crawler.py" line="96" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fe7cbc67-1dbd-4017-b384-382a9c7ecdc7" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Crawler.py" afterPath="$PROJECT_DIR$/Crawler.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="Crawler.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -39,8 +40,8 @@
       <file leaf-file-name="Crawler.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Crawler.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-0.042643923">
-              <caret line="158" column="39" selection-start-line="158" selection-start-column="39" selection-end-line="158" selection-end-column="39" />
+            <state vertical-scroll-proportion="0.3411514">
+              <caret line="347" column="26" selection-start-line="347" selection-start-column="26" selection-end-line="347" selection-end-column="26" />
               <folding>
                 <element signature="e#43#56#0" expanded="true" />
               </folding>
@@ -658,8 +659,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Crawler.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-0.042643923">
-          <caret line="158" column="39" selection-start-line="158" selection-start-column="39" selection-end-line="158" selection-end-column="39" />
+        <state vertical-scroll-proportion="0.3411514">
+          <caret line="347" column="26" selection-start-line="347" selection-start-column="26" selection-end-line="347" selection-end-column="26" />
           <folding>
             <element signature="e#43#56#0" expanded="true" />
           </folding>
