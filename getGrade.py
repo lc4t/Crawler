@@ -76,7 +76,7 @@ def init(username,password,sleepTime = 600,configList = None):
     diff = difflib.ndiff(old,new)
 
     if (not (filecmp.cmp(fileOld,fileNew))):
-        print "not same"
+        print "not same->" + username
         content = 'studentID= ' + username + ' \n'
         for i in diff:
             content += i
@@ -87,7 +87,7 @@ def init(username,password,sleepTime = 600,configList = None):
         old = open(fileOld,'w')
         old.writelines(new.readlines())
     else:
-        print "same"
+        print "same->" + username
     print "sleeping...@",
     print time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
     time.sleep(sleepTime)
