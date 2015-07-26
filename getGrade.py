@@ -8,7 +8,6 @@ import Crawler
 import time
 import filecmp
 import re
-import threading
 class sendMail:
     def __init__(self,content,mailTo,mailHost,mailUser,mailPassword,mailPosfix):
         print ("mailing")
@@ -62,61 +61,49 @@ def init(username,password,sleepTime = 600,configList = None):
         mail_user = raw_input("mailUser,  lpylzx1@qq.com:")
         mail_pass = raw_input("mailPassword:")
         mail_postfix = raw_input("mailPostfix, qq.com:")
-    # while(True):
-    try:
-        Crawler.init(username,password)
-    except Exception as e:
-        print (e)
-        return
-    new = open(fileNew, 'U').readlines()
-    try:
-        old = open(fileOld, 'r').readlines()
-    except:
-        old = open(fileOld, 'w+').readlines()
-    diff = difflib.ndiff(old,new)
-
-    if (not (filecmp.cmp(fileOld,fileNew))):
-        print "not same->" + username
-        content = 'studentID= ' + username + ' \n'
-        for i in diff:
-            content += i
-        print content
-        sendMail(content,mailto_list,mail_host,mail_user,mail_pass,mail_postfix)
-        print "new grades"
-        new = open(fileNew,'r')
-        old = open(fileOld,'w')
-        old.writelines(new.readlines())
-    else:
-        print "same->" + username
-    print "sleeping...@",
-    print time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
-    time.sleep(sleepTime)
-
-def getter(existConfigFile):
-
-    existConfigFile = re.split(',| ',existConfigFile)
-    args = []
-    for configFile in existConfigFile:
+    while(True):
         try:
-            configList = open(configFile,'rU').readlines()
+            Crawler.init(username,password)
+        except Exception as e:
+            print (e)
+            continue
+        new = open(fileNew, 'U').readlines()
+        try:
+            old = open(fileOld, 'r').readlines()
         except:
-            configList = []
-        if (configList):
-            username = str(configList[0].strip('\n'))
-            password = str(configList[1].strip('\n'))
-            sleepTime = int(configList[2].strip('\n'))
-        else:
-            username = raw_input("input your username:")
-            password = raw_input("input your password:")
-            sleepTime = int(raw_input("input sleep time，600:"))
-        args.append([username,password,sleepTime,configList])
-    while (True):
-        for arg in args:
-            init(arg[0],arg[1],arg[2],arg[3])
+            old = open(fileOld, 'w+').readlines()
+        diff = difflib.ndiff(old,new)
 
+        if (not (filecmp.cmp(fileOld,fileNew))):
+            print "not same"
+            content = 'studentID= ' + username + ' \n'
+            for i in diff:
+                content += i
+            print content
+            mail = sendMail(content,mailto_list,mail_host,mail_user,mail_pass,mail_postfix)
+            print "new grades"
+            new = open(fileNew,'r')
+            old = open(fileOld,'w')
+            old.writelines(new.readlines())
+        else:
+            print "same"
+        print "sleeping...@",
+        print time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
+        time.sleep(sleepTime)
 
 if __name__ == '__main__':
     existConfigFile = raw_input("your config File:")
-    getter(existConfigFile)
+    try:
+        configList = open(existConfigFile,'rU').readlines()
+    except:
+        configList = []
 
-
+    if (configList):
+        username = str(configList[0].strip('\n'))
+        password = str(configList[1].strip('\n'))
+        sleepTime = int(configList[2].strip('\n'))
+    else:
+        username = raw_input("input your username:")
+        password = raw_input("input your password:")
+        sleepTime = int(raw_input("input sleep time，600:"))
+    init(username,password,sleepTime,configList)
