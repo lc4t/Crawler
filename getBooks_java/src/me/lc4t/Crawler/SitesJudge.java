@@ -14,13 +14,19 @@ public class SitesJudge
 	{
 		Pattern biqugePattern = Pattern.compile("(?i)biquge.la");  
 	    Matcher biqugeMatcher = biqugePattern.matcher(url);
-	    
+	    Pattern heikexsPattern = Pattern.compile("(?i)heikexs.com");  
+	    Matcher heikexsMatcher = biqugePattern.matcher(url);
+
 	    if(biqugeMatcher.find())
 	    {
-	    	BiqugeLa a = new BiqugeLa();
-	    	return a ;
+	    	BiqugeLa biquge = new BiqugeLa();
+	    	return biquge ;
 	    }
-	    
+	    else if (heikexsMatcher.find())
+	    {
+	    	Heikexs heikexs = new Heikexs();
+	    	return heikexs;
+	    }
 	    
 	    else
 	    {

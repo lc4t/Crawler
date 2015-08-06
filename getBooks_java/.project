@@ -20,10 +20,5 @@
 			<type>1</type>
 			<location>/home/lc4t/Documents/jar/jsoup-1.8.3.jar</location>
 		</link>
-		<link>
-			<name>lib/sqlitejdbc.jar</name>
-			<type>1</type>
-			<location>/home/lc4t/Documents/jar/sqlitejdbc.jar</location>
-		</link>
 	</linkedResources>
 </projectDescription>
