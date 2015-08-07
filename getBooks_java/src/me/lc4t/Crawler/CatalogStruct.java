@@ -64,9 +64,11 @@ public class CatalogStruct
 		this.rawHTML = catalog;
 		
 		SitesJudge judger = new SitesJudge();
-		Site site = judger.judge(url);
+		Site site = judger.judge(this.rootURL);
 		
-		site.setRawURL(url);
+
+		
+		site.setRawURL(this.rootURL);
 		site.setCatalog(rawHTML);
 		this.name = site.getName();
 		this.author = site.getAuthor();
@@ -181,7 +183,7 @@ public class CatalogStruct
 
         bufferWritter.write("author: " + this.author + "\n");
         bufferWritter.write("total: " + this.total + "\n");
-        System.out.println("latest: " + this.latest + "\n");
+        bufferWritter.write("latest: " + this.latest + "\n");
         bufferWritter.write("updateTime: " + this.updateTime + "\n");
         bufferWritter.write("status: " + this.status + "\n");
         bufferWritter.write("dataFrom: " + this.dataFrom + "\n");

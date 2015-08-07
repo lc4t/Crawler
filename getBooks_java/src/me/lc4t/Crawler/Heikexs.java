@@ -105,33 +105,23 @@ public class Heikexs extends Site
 	
 	public String getStatus()
 	{
-		String status = this.catalog.select("meta[property=\"og:novel:status\"]").toString();	
-	    Pattern pattern = Pattern.compile("content=\"(.*?)\"");  
-	    Matcher matcher = pattern.matcher(status);
-	    if (matcher.find())
-	    {
-	    	return matcher.group(1);
-	    }
-	    else
-	    {
-	    	return null;
-	    }
+		return "Unknow";
 	}
 	
 	public String getDataFrom()
 	{
-		return "笔趣阁";
+		return "黑客小说";
 	}
 
 	public String getIntroduction()
 	{
-		String introduction = this.catalog.select("div[id=\"intro\"]").toString();
-	    Pattern pattern = Pattern.compile("<p>(.*)</p>");  
+		String introduction = this.catalog.select("div.jianjie").toString();
+	    Pattern pattern = Pattern.compile("小说简介：\n(.*)\n</div>");  
 	    Matcher matcher = pattern.matcher(introduction);
 	    String str = "";
 	    while(matcher.find())
 	    {
-	    	str += matcher.group(1);
+	    	str += matcher.group(1).replace("<p>", "").replace("</p>","").replace("<br>", "\n");
 	    }
 	    return str;
 	    
@@ -144,11 +134,16 @@ public class Heikexs extends Site
 		
 		List<Map> catalogList = new ArrayList<Map>();
 		
-		String catalog = this.catalog.select("div[id=\"list\"]").toString();	
-	    //(<a href=\"([0-9]{1,100}.html)\">(.*)</a>)|(<dt>\n{1,8}(.*))
+		String catalog = this.catalog.select("dl.cat_box").toString();	
 
-	    Pattern pattern = Pattern.compile("<a href=\"([0-9]{1,100}.html)\">(.*)</a>");  
+		Pattern pattern = Pattern.compile("<dl class=\"cat_box\">[\\s]{1,10}([\\s\\S]*?)[\\s]{1,10}</dl>");  
 	    Matcher matcher = pattern.matcher(catalog);
+	    if (matcher.find())
+	    {
+	    	catalog = matcher.group(1);
+	    }
+	    pattern = Pattern.compile("<a href=\"([/\\d\\w]{1,100}.html)\" title=\"(.*)\">.*</a>");  
+	    matcher = pattern.matcher(catalog);
 	    
 	    int i = 1;
         while (matcher.find()) 
@@ -161,6 +156,7 @@ public class Heikexs extends Site
         } 
 
         setTotal(i - 1);
+
         return catalogList;
 
 	}
@@ -171,29 +167,29 @@ public class Heikexs extends Site
 
 		for (int i = 0; i < this.total; i++)
 		{
-			String url = this.rawURL + "/" + catalogList.get(i).get("herf");
+			String url = this.rawURL +  catalogList.get(i).get("herf");
 
 			Document tempHTML = Jsoup.connect(url).timeout(10000).get();
-			String text = tempHTML.select("div[id=\"content\"]").toString();
-			text = text.substring(45,text.length() - 7).replaceAll("&nbsp[;]{1,3}", " ").replaceAll("\\s<br>\\s\\s<br>", "");
+			String paragraph = tempHTML.select("p").toString();
+
+			Pattern pattern = Pattern.compile("<p>(.*)</p>");  
+		    Matcher matcher = pattern.matcher(paragraph);
+		    
+		    String text = "";
+		    while (matcher.find())
+		    {
+		    	text += matcher.group(1);
+		    }
+		    
+		    
 			
 			catalogList.get(i).put("content", text + "\n");
 			System.out.println("getting: " + catalogList.get(i).get("title") + "	" + catalogList.get(i).get("id") + "/" + this.total);
 			
 
 		}
-//		
-    	
-    	
-    	
-    	
-    	
 
-//		map.put("content", text);
-//    	catalogList.add(map);
-//		
-    	
     	return catalogList;
-//    	System.out.println(map.get("content"));
+
 	}
 }

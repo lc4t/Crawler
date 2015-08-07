@@ -15,7 +15,7 @@ public class SitesJudge
 		Pattern biqugePattern = Pattern.compile("(?i)biquge.la");  
 	    Matcher biqugeMatcher = biqugePattern.matcher(url);
 	    Pattern heikexsPattern = Pattern.compile("(?i)heikexs.com");  
-	    Matcher heikexsMatcher = biqugePattern.matcher(url);
+	    Matcher heikexsMatcher = heikexsPattern.matcher(url);
 
 	    if(biqugeMatcher.find())
 	    {
