@@ -2,3 +2,4 @@
 *.config
 dormGet.py
 *.json
+*.db
