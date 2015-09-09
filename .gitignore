@@ -3,3 +3,5 @@
 dormGet.py
 *.json
 *.db
+*.xls
+*.7z
