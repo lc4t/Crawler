@@ -142,13 +142,13 @@ class CreateXLS:
 
 
 if __name__ == '__main__':
-    # try:
-    q = CreateXLS('46_result.xls','Sheet1')
-    q.Query('test.txt')
-    # except:
-    #     print (u'将信息保存到txt中,每一行包含信息依次为\n准考证号 姓名 学院 年级 班级号 学号\n用至少一个空格隔开，可以从xls表格中复制出来')
-    #     print(u'保存的文件名为test.txt 然后就可以再次运行了')
-    #     print(u'如果上面都OK,还是报错的话,拿报错信息来吧')
+    try:
+        q = CreateXLS('46_result.xls','Sheet1')
+        q.Query('test.txt')
+    except:
+        print (u'将信息保存到txt中,每一行包含信息依次为\n准考证号 姓名 学院 年级 班级号 学号\n用至少一个空格隔开，可以从xls表格中复制出来')
+        print(u'保存的文件名为test.txt 然后就可以再次运行了')
+        print(u'如果上面都OK,还是报错的话,可能是需要验证码0.0')
 
 
 
