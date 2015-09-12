@@ -27,8 +27,7 @@ class Query:
         }
         request = urllib.request.Request(url,headers=headers)
         result = urllib.request.urlopen(request)
-        html = BeautifulSoup(result.read())
-        print (html)
+        html = BeautifulSoup(result.read()) 
         p = html.find_all(class_='cetTable')
         ans = p[0].get_text()
         return ans.replace(' ','').replace('\n','').replace('\t','').replace('\r','').replace('姓名：',' ').replace('学校：',' ').replace('考试类别：',' ').replace('准考证号：',' ').replace('考试时间：',' ').replace('总分：',' ').replace('听力：',' ').replace('阅读：',' ').replace('写作与翻译：',' ')
@@ -43,10 +42,8 @@ class Query:
         'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.85 Safari/537.36',
         'Referer': 'http://www.chsi.com.cn/cet/',
         }
-        
         request = urllib.request.Request(url,headers=headers)
         result = urllib.request.urlopen(request)
-        
         # proxy={'host':'127.0.0.1','port':10801}
         # proxy_support = http.request.ProxyHandler({"http" : "http://%(host)s:%(port)d" % proxy})
         # opener = http.request.build_opener(proxy_support)
@@ -54,7 +51,6 @@ class Query:
         # request = http.request.Request(url = url,headers = headers)
         # result = opener.open(self.request)
         html = BeautifulSoup(result.read())
-        # print (html)
         p = html.find_all(class_='cetTable')
         ans = p[0].get_text()
         return ans.replace(' ','').replace('\n','').replace('\t','').replace('\r','').replace('姓名：',' ').replace('学校：',' ').replace('考试类别：',' ').replace('准考证号：',' ').replace('考试时间：',' ').replace('总分：',' ').replace('听力：',' ').replace('阅读：',' ').replace('写作与翻译：',' ')
