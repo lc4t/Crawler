@@ -1,7 +1,11 @@
+/__pycache/
+dormGet.py
+test.*
+*.log
 *.txt
 *.config
-dormGet.py
 *.json
 *.db
 *.xls
 *.7z
+*.pyc
