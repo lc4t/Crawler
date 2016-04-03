@@ -11,30 +11,96 @@ import logging
 logging.basicConfig(level=logging.DEBUG,
                     format='[%(asctime)s] [thread: %(threadName)s] [ID: %(thread)d] [module: %(module)s] [function:%(funcName)s] [line: %(lineno)d] [%(levelname)s: %(message)s]',
                     datefmt='%a, %d %b %Y %H:%M:%S',
-                    filename='WeiboCrawler.log',
+                    filename='InfoCrawler.log',
                     filemode='w')
 
-# logging.debug('debug message')
-# logging.info('info message')
-# logging.warning('warning message')
-# logging.error('error message')
-# logging.critical('critical message')
-# import lxml
+
 import base64
 import binascii
 import re
 import requests
 import rsa
 import time
+from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from urllib.parse import unquote
 from urllib.parse import urlencode
 
-# from bs4 import BeautifulSoup
 #------END--------#
 
+class User:
+    '''eg
+        source: weibo
+        screen_name: pig
+        profile_image_url:http://tp4.sinaimg.cn/1/1/1
+        profile_url:/u/2656274875
+        statuses_count:1
+        verified:True
+        verified_reason:pig
+        description:new pig
+        verified_type:1
+        gender:
+        fansNum:1232w
+        reposts_count:
+        comments_count:
+        attitudes_count:
 
+
+    '''
+
+class Message:
+    '''eg.
+        source: weibo
+        time: yyyy-yy-dd
+        author: userid
+        text: whoami
+        link: 
+        keyword: pig
+
+    '''
+    def __init__(self, Source, content):
+
+        self.rawContent = content
+        self.Source = Source
+        
+        if (Source == 'weibo'):
+            pass
+    def getSource(self):
+        return self.Source
+
+
+
+
+
+class Weibo:
+    '''
+        follow weibo.cn 's define
+    '''
+    def __init__(self, jsonContent):
+        self.filter = []
+        self.hotmblog = []
+        self.follow_mblog = []
+        self.mblog = []
+        for card in jsonContent['cards']:
+            # print (card)
+            if (card['itemid'] == 'filter'):
+                for message in card['group']:
+                    self.filter.append(message)
+            elif (card['itemid'] == 'hotmblog'):
+                for message in card['card_group']:
+                    self.hotmblog.append(message)
+            elif (card['itemid'] == 'follow_mblog'):
+                for message in card['card_group']:
+                    self.follow_mblog.append(message)
+            elif (card['itemid'] == 'mblog'):
+                for message in card['card_group']:
+                    self.mblog.append(message)
+            else:
+                logging.error('New itemid in cards, please edit it: ' + card['itemid'])
+    def process(self):
+
+    
 
 
 class WebsiteFactory:
@@ -63,6 +129,8 @@ class WebsiteWeiboCom(WebsiteFactory):
     def __init__(self):
         logging.debug('Class WebsiteWeiboCom init')
         self.request = requests.Session()
+        self.method = 'requests'
+    
     def getRSAPassword(self, pubkey, servertime, nonce, password, key = 65537):
         rsaPublickey = int(pubkey, 16)
         key = rsa.PublicKey(rsaPublickey, key)
@@ -71,19 +139,46 @@ class WebsiteWeiboCom(WebsiteFactory):
         password = binascii.b2a_hex(password)
         return password.decode()
 
-    def login(self, username, password, method = 'requests'):
+    def login(self, username, password, method = 'init'):
+        if (method == 'init'):
+            method = self.method
+        else:
+            self.method = method
         try:
             if (method == 'requests'):
-                self.loginByRequests(username, password)
+                return self.loginByRequests(username, password)
             elif (method == 'webdriver'):
-                self.loginByWebdriver(username, password)
+                return self.loginByWebdriver(username, password)
             elif (method == 'mobile'):
-                self.loginByMobile(username, password)
+                return self.loginByMobile(username, password)
             else:
                 raise AttributeError('No match found')
 
         except Exception as e:
             logging.error('Do not match a method to crawler')
+            logging.debug(e)
+            return None
+
+    def search(self, type, query, method = 'init'):
+        '''need params to search
+            type
+            query
+        '''
+        if (method == 'init'):
+            method = self.method
+        else:
+            self.method = method
+        try:
+            if (method == 'requests'):
+                return self.searchByRequests(type, query)
+            elif (method == 'webdriver'):
+                return self.searchByWebdriver(type, query)
+            elif (method == 'mobile'):
+                return self.searchByMobile(type, query)
+            else:
+                raise AttributeError('No match found')
+        except Exception as e:
+            logging.error('Wrong in return a search.')
             logging.debug(e)
             return None
 
@@ -258,6 +353,9 @@ class WebsiteWeiboCom(WebsiteFactory):
             weiboComSet = self.request.get('https:' + setcookiesURL['weibo.com'].replace('\\', ''))
             weiboCnSet = self.request.get('https:' + setcookiesURL['weibo.cn'].replace('\\', ''))
             sinaSet = self.request.get('https:' + setcookiesURL['sina.com.cn'].replace('\\', ''))
+
+
+
             return self.request.get(loginURL).text
         except Exception as e:
             '''
@@ -272,9 +370,70 @@ class WebsiteWeiboCom(WebsiteFactory):
             logging.debug(e)
             return None
 
+    def searchByMobile(self, Type, query):
+        '''need params to search 
+            # get
+            type: all/user/wb
+            query: user
+        '''
+        if (Type == 'all'):
+            typeCode = '1'
+        elif (Type == 'user'):
+            typeCode = '3'
+        elif (Type == 'wb' or Type == 'weibo'):
+            Type = 'wb'
+            typeCode = '2'
+        else:
+            Type = 'all'
+            typeCode = '1'
+            logging.error('method error:' + str(Type) + ' is invalid, use \'all\'')
+        # queryURL = 'http://m.weibo.cn/searchs/result'
+        # params = {
+        #     'type':Type,
+        #     'queryVal':str(query)
+        # }
+        # queryANS = self.request.get(queryURL, params = params)
+        # print (queryANS.text)
+
+        queryURL = 'http://m.weibo.cn/page/pageJson'
+        params = {
+            'containerid':'100103type=' + typeCode + '&q=' + str(query),
+            'type':str(Type),
+            'queryVal':str(query),
+            'title':str(query),
+            'v_p':11,
+            'ext':'',
+            'fid':'100103type=' + typeCode + '&q=' + str(query),
+            'uicode':10000011,
+            'next_cursor':'',
+            'page':1,
+        }
+        queryANS = self.request.get(queryURL, params = params)
+        result = queryANS.text.replace('false', 'False').replace('true', 'True').replace('null', 'None')
+        result = eval(result)
+        return Weibo(result)
+        
+'''
+
+
+
+
+'''
+
+
+
+
+
 def main():
     weibo = WebsiteFactory().selector('weibo.com')
     weibo.login('weibo@lc4t.me', 'lc4t', 'mobile')
-    # print (homepage)
+    weibo.search('all', '新闻')
+
 if __name__ == '__main__':
     main()
+
+'''
+http://m.weibo.cn/unread?t=1459258275363
+unix timestamp with 3 points,delete point
+
+'''
