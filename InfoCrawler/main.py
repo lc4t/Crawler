@@ -31,43 +31,57 @@ from urllib.parse import urlencode
 
 class User:
     '''eg
+        id:2656274875   //user id 
+        containerid=1005052656274875   // call 
         source: weibo
         screen_name: pig
         profile_image_url:http://tp4.sinaimg.cn/1/1/1
         profile_url:/u/2656274875
-        statuses_count:1
         verified:True
         verified_reason:pig
         description:new pig
         verified_type:1
         gender:
-        fansNum:1232w
-        reposts_count:
-        comments_count:
-        attitudes_count:
+        weibo_count:statuses_count:1223
+        follow_count:
+        fans_count:
+        like_count:
+        topic_count:
 
 
+    基本信息：http://m.weibo.cn/page/card?itemid=1005052656274875_-_WEIBO_INDEX_PROFILE_APPS&callback=_1459705215087_4
+    微博:http://m.weibo.cn/page/card?itemid=1005052656274875_-_WEIBO_INDEX_PROFILE_WEIBO_GROUP_OBJ&callback=_1459705466830_7
+    相册:http://m.weibo.cn/page/card?itemid=1005052656274875_-_WEIBO_INDEX_PROFILE_PHOTOS&callback=_1459705466830_8
+    
     '''
+
+    def __init__(self):
+        pass
 
 class Message:
     '''eg.
-        source: weibo
-        time: yyyy-yy-dd
-        author: userid
+        id:123123123
+        type: weibo
+        created_timestamp: yyyy-yy-dd
+        author: foreign-key--userid
         text: whoami
+        source:weibo.com
+        reposts_count:
         link: 
         keyword: pig
-
+        reposts_count:转发
+        comments_count:评论
+        attitudes_count:赞
     '''
-    def __init__(self, Source, content):
+    def __init__(self, Type, content):
 
         self.rawContent = content
-        self.Source = Source
+        self.Type = Type
         
-        if (Source == 'weibo'):
+        if (Type == 'weibo'):
             pass
-    def getSource(self):
-        return self.Source
+    def getType(self):
+        return self.Type
 
 
 
@@ -426,7 +440,7 @@ class WebsiteWeiboCom(WebsiteFactory):
 
 def main():
     weibo = WebsiteFactory().selector('weibo.com')
-    weibo.login('weibo@lc4t.me', 'lc4t', 'mobile')
+    weibo.login('weibo@lc4t.me', 'lc4t@2016', 'mobile')
     weibo.search('all', '新闻')
 
 if __name__ == '__main__':
