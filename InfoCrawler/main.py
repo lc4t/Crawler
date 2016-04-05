@@ -3,7 +3,7 @@ __author__ = 'lc4t'
 
 
 #------CONFIG-----#
-
+DEBUG = True
 #------END--------#
 
 #------import-----#
@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.DEBUG,
                     filemode='w')
 
 
-import base64
+import base64 
 import binascii
 import re
 import requests
@@ -74,14 +74,52 @@ class Message:
         attitudes_count:赞
     '''
     def __init__(self, Type, content):
-
+        logging.debug('Message Class init.')
+        self.state = False
         self.rawContent = content
-        self.Type = Type
-        
-        if (Type == 'weibo'):
-            pass
+        self.Type = str(Type)
+        if ('weibo' in Type):
+            try:
+                self.id = content['mblog']['id']
+                self.type = 'weibo'
+                self.created_timestamp = content['mblog']['created_timestamp']
+                self.author = content['mblog']['user']['id']  # foreign key
+                self.text = content['mblog']['text']
+                self.source = content['mblog']['source']
+                self.link = content['scheme']
+                self.reposts_count = content['mblog']['reposts_count']
+                self.comments_count = content['mblog']['comments_count']
+                self.attitudes_count = content['mblog']['attitudes_count']
+                self.state = True
+            except Exception as eMessage:
+                logging.error('Error in Init message from weibo:' + str(eMessage))
+                logging.debug(content)
+        else:
+            logging.error('Error in Init message, cannot find.')
+    def getState(self):
+        return self.state
     def getType(self):
         return self.Type
+    def printMessage(self):
+        if (self.state == True):
+            print ('Message Type: ' + self.Type)
+            print ('Message State: ' + str(self.state))
+            print ('-->Message Start<--')
+            print ('id---------------->' + str(self.id))
+            print ('type-------------->' + self.type)
+            print ('created_timestamp->' + str(self.created_timestamp))
+            print ('author------------>' + str(self.author))
+            print ('text-------------->' + self.text)
+            print ('source------------>' + self.source)
+            print ('link-------------->' + self.link)
+            print ('reposts_count----->' + str(self.reposts_count))
+            print ('comments_count---->' + str(self.comments_count))
+            print ('attitudes_count--->' + str(self.attitudes_count))
+            print ('-->Message End  <--' + str(self.attitudes_count))
+        else:
+            if (DEBUG):
+                print ('Message Type: ' + self.Type)
+                print ('Message State: ' + str(self.state))
 
 
 
@@ -92,34 +130,59 @@ class Weibo:
         follow weibo.cn 's define
     '''
     def __init__(self, jsonContent):
-        self.filter = []
-        self.hotmblog = []
-        self.follow_mblog = []
-        self.mblog = []
-        for card in jsonContent['cards']:
-            # print (card)
-            if (card['itemid'] == 'filter'):
-                for message in card['group']:
-                    self.filter.append(message)
-            elif (card['itemid'] == 'hotmblog'):
-                for message in card['card_group']:
-                    self.hotmblog.append(message)
-            elif (card['itemid'] == 'follow_mblog'):
-                for message in card['card_group']:
-                    self.follow_mblog.append(message)
-            elif (card['itemid'] == 'mblog'):
-                for message in card['card_group']:
-                    self.mblog.append(message)
-            else:
-                logging.error('New itemid in cards, please edit it: ' + card['itemid'])
+        try:
+            logging.debug('Weibo Class init.')
+            # self.filter = []
+            self.hotmblog = []
+            # self.follow_mblog = []
+            self.mblog = []
+            self.more_hot_mblog = []
+            for card in jsonContent['cards']:
+                # print (card)
+                if (card['itemid'] == 'filter'):
+                    #no use, pass it
+                    pass
+                    # for message in card['group']:
+                    #     message = Message('weibo', message)
+                    #     self.filter.append(message)
+                elif (card['itemid'] == 'hotmblog'):
+                    for message in card['card_group']:
+                        if ('mblog' not in message): continue
+                        message = Message('weibo_hotmblog', message)
+                        self.hotmblog.append(message)
+                # elif (card['itemid'] == 'follow_mblog'):
+                #     for message in card['card_group']:
+                #         message = Message('weibo', message)
+                #         self.follow_mblog.append(message)
+                elif (card['itemid'] == 'mblog'):
+                    for message in card['card_group']:
+                        # if ('mblog' not in message): continue
+                        message = Message('weibo_mblog', message)
+                        self.mblog.append(message)
+                elif (card['itemid'] == 'more_hot_mblog'):
+                    for message in card['card_group']:
+                        if ('mblog' not in message): continue
+                        message = Message('weibo_more_hot_mblog', message)
+                        self.more_hot_mblog.append(message)
+                else:
+                    logging.error('New itemid in cards, please edit it: ' + card['itemid'])
+        except Exception as eWeibo:
+            logging.error('Cannot init Weibo Class: ' + str(eWeibo))
     def process(self):
-
-    
+        for i in self.hotmblog:
+            i.printMessage()
+        # for i in self.follow_mblog:
+        #     i.printMessage()
+        for i in self.mblog:
+            i.printMessage()
+        for i in self.more_hot_mblog:
+            i.printMessage()
 
 
 class WebsiteFactory:
     def __init__(self):
         logging.debug('Class WebsiteFactory init')
+    
     def selector(self, selectType):
         try:
             if (selectType == 'weibo.com'):
@@ -191,9 +254,9 @@ class WebsiteWeiboCom(WebsiteFactory):
                 return self.searchByMobile(type, query)
             else:
                 raise AttributeError('No match found')
-        except Exception as e:
+        except Exception as ex:
             logging.error('Wrong in return a search.')
-            logging.debug(e)
+            logging.debug(ex)
             return None
 
     def loginByRequests(self, username, password):
@@ -390,43 +453,46 @@ class WebsiteWeiboCom(WebsiteFactory):
             type: all/user/wb
             query: user
         '''
-        if (Type == 'all'):
-            typeCode = '1'
-        elif (Type == 'user'):
-            typeCode = '3'
-        elif (Type == 'wb' or Type == 'weibo'):
-            Type = 'wb'
-            typeCode = '2'
-        else:
-            Type = 'all'
-            typeCode = '1'
-            logging.error('method error:' + str(Type) + ' is invalid, use \'all\'')
-        # queryURL = 'http://m.weibo.cn/searchs/result'
-        # params = {
-        #     'type':Type,
-        #     'queryVal':str(query)
-        # }
-        # queryANS = self.request.get(queryURL, params = params)
-        # print (queryANS.text)
+        try:
+            if (Type == 'all'):
+                typeCode = '1'
+            elif (Type == 'user'):
+                typeCode = '3'
+            elif (Type == 'wb' or Type == 'weibo'):
+                Type = 'wb'
+                typeCode = '2'
+            else:
+                Type = 'all'
+                typeCode = '1'
+                logging.error('method error:' + str(Type) + ' is invalid, use \'all\'')
+            # queryURL = 'http://m.weibo.cn/searchs/result'
+            # params = {
+            #     'type':Type,
+            #     'queryVal':str(query)
+            # }
+            # queryANS = self.request.get(queryURL, params = params)
+            # print (queryANS.text)
 
-        queryURL = 'http://m.weibo.cn/page/pageJson'
-        params = {
-            'containerid':'100103type=' + typeCode + '&q=' + str(query),
-            'type':str(Type),
-            'queryVal':str(query),
-            'title':str(query),
-            'v_p':11,
-            'ext':'',
-            'fid':'100103type=' + typeCode + '&q=' + str(query),
-            'uicode':10000011,
-            'next_cursor':'',
-            'page':1,
-        }
-        queryANS = self.request.get(queryURL, params = params)
-        result = queryANS.text.replace('false', 'False').replace('true', 'True').replace('null', 'None')
-        result = eval(result)
-        return Weibo(result)
-        
+            queryURL = 'http://m.weibo.cn/page/pageJson'
+            params = {
+                'containerid':'100103type=' + typeCode + '&q=' + str(query),
+                'type':str(Type),
+                'queryVal':str(query),
+                'title':str(query),
+                'v_p':11,
+                'ext':'',
+                'fid':'100103type=' + typeCode + '&q=' + str(query),
+                'uicode':10000011,
+                'next_cursor':'',
+                'page':1,
+            }
+            queryANS = self.request.get(queryURL, params = params)
+            result = queryANS.text.replace('false', 'False').replace('true', 'True').replace('null', 'None')
+            result = eval(result)
+            return Weibo(result)
+        except Exception as eSearch:
+            logging.error('Error in search function: ' + str(eSearch))
+            return None
 '''
 
 
@@ -440,9 +506,9 @@ class WebsiteWeiboCom(WebsiteFactory):
 
 def main():
     weibo = WebsiteFactory().selector('weibo.com')
-    weibo.login('weibo@lc4t.me', 'lc4t@2016', 'mobile')
-    weibo.search('all', '新闻')
-
+    weibo.login('weibo@lc4t.me', 'lc4t', 'mobile')
+    a = weibo.search('all', '新闻')
+    a.process()
 if __name__ == '__main__':
     main()
 
