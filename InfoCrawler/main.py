@@ -4,6 +4,8 @@ __author__ = 'lc4t'
 
 #------CONFIG-----#
 DEBUG = True
+availableType = ['weibo', ]
+DEFAULT_LOGIN = 'mobile'
 #------END--------#
 
 #------import-----#
@@ -96,10 +98,13 @@ class Message:
                 logging.debug(content)
         else:
             logging.error('Error in Init message, cannot find.')
+    
     def getState(self):
         return self.state
+    
     def getType(self):
         return self.Type
+    
     def printMessage(self):
         if (self.state == True):
             print ('Message Type: ' + self.Type)
@@ -168,15 +173,17 @@ class Weibo:
                     logging.error('New itemid in cards, please edit it: ' + card['itemid'])
         except Exception as eWeibo:
             logging.error('Cannot init Weibo Class: ' + str(eWeibo))
-    def process(self):
-        for i in self.hotmblog:
-            i.printMessage()
-        # for i in self.follow_mblog:
-        #     i.printMessage()
-        for i in self.mblog:
-            i.printMessage()
-        for i in self.more_hot_mblog:
-            i.printMessage()
+    
+    def handle(self, method = 'print'):
+        if (method == 'print'):
+            for i in self.hotmblog:
+                i.printMessage()
+            # for i in self.follow_mblog:
+            #     i.printMessage()
+            for i in self.mblog:
+                i.printMessage()
+            for i in self.more_hot_mblog:
+                i.printMessage()
 
 
 class WebsiteFactory:
@@ -349,8 +356,8 @@ class WebsiteWeiboCom(WebsiteFactory):
             '''
             if (re.findall('retcode=0', locationURL)[0]):
                 redirectURL =  re.findall('"redirect":"(.*)"', self.request.get(locationURL).text)[0].replace('\\', '')
-                print (self.request.get(redirectURL).text)
-
+                self.request.get(redirectURL).text
+                return True
         except Exception as e:
             logging.error('Cannot Login')
             logging.debug(e)
@@ -390,7 +397,8 @@ class WebsiteWeiboCom(WebsiteFactory):
             time.sleep(20)  # wait for loading content
             logging.info('login success')
             # print (self.driver.page_source)
-            return self.driver.page_source
+            # return self.driver.page_source
+            return True
         except Exception as e:
             logging.error('Cannot login')
             logging.debug(e)
@@ -430,10 +438,8 @@ class WebsiteWeiboCom(WebsiteFactory):
             weiboComSet = self.request.get('https:' + setcookiesURL['weibo.com'].replace('\\', ''))
             weiboCnSet = self.request.get('https:' + setcookiesURL['weibo.cn'].replace('\\', ''))
             sinaSet = self.request.get('https:' + setcookiesURL['sina.com.cn'].replace('\\', ''))
-
-
-
-            return self.request.get(loginURL).text
+            self.request.get(loginURL).text  #
+            return True
         except Exception as e:
             '''
                 try to find why can not login
@@ -500,15 +506,73 @@ class WebsiteWeiboCom(WebsiteFactory):
 
 '''
 
+class Controller:
+    def __init__(self):
+        print ('Welcome to this crawler--->')
 
+    def control(self):
+        
+        inputControlCharText = '''
+                                Main control
+                                --->1: select type
+                                --->2: login
+                                --->3: search
+                                --->c: return back
+                                '''
+        inputControlChar = input(inputControlCharText)
+        while (inputControlChar != 'exit'):
+            if (inputControlChar == '1'):
+                self.selector()
+            elif (inputControlChar == '2'):
+                self.loginer(self.Type)
+            elif (inputControlChar == '3'):
+                self.search()
+            elif (inputControlChar == 'c'):
+                return
 
+            else:
+                print ('Wrong input')
+            inputControlChar = input(inputControlCharText)
+    def selector(self):
+        inputType= ''
+        while (inputType not in availableType):
+            inputType = input('Input type from  ' + str(availableType) + ': ')
+        self.Type = inputType
+        if (inputType == availableType[0]):
+            #weibo
+            self.process = WebsiteFactory().selector('weibo.com')
+        else:
+            pass
+
+    def loginer(self, value):
+        inputUsername = input('Input username: ')
+        inputPassword = input('Input password: ')
+        while (not self.process.login(inputUsername, inputPassword, DEFAULT_LOGIN)):
+            inputNumText = '''
+                            Cannot login, please check log.
+                            --->1: reInput username
+                            --->2: reInput password
+                            -->12: reInput both
+                            '''
+            
+            inputNum = input(inputNumText)
+            if ('1' in inputNum):
+                inputUsername = input('Input username: ')
+            if ('2' in inputNum):
+                inputPassword = input('Input password: ')
+        print ('login success')
+    def search(self):
+        inputQueryTypeText = '''input search type:'''
+        inputQueryValueText = '''input search query:'''
+
+        search = self.process.search(input(inputQueryTypeText), input(inputQueryValueText))
+        search.handle('print')
 
 
 def main():
-    weibo = WebsiteFactory().selector('weibo.com')
-    weibo.login('weibo@lc4t.me', 'lc4t', 'mobile')
-    a = weibo.search('all', '新闻')
-    a.process()
+    eg = Controller()
+    eg.control()
+
 if __name__ == '__main__':
     main()
 
