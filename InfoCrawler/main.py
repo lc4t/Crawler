@@ -62,29 +62,54 @@ class WeiboUser:
         try:
             self.rawContent = jsonContent
             self.id = jsonContent['user']['id']
-            self.containerid = re.findall('containerid=(\d+?)&',requests.get('http://m.weibo.cn/u/1618051664?').text)[0]
-            screen_name = jsonContent['user']['screen_name']
-            profile_image_url = jsonContent['user']['profile_image_url']
-            profile_url = jsonContent['user']['profile_url']
-            verified = jsonContent['user']['verified']
-            verified_reason = jsonContent['user']['verified_reason']
-            description = jsonContent['user']['description']
-            verified_type = jsonContent['user']['verified_type']
-            gender = jsonContent['user']['gender']
-            userinfoText = requests.get('http://m.weibo.cn/page/card?itemid=1005051618051664_-_WEIBO_INDEX_PROFILE_APPS&callback=s').text.encode().decode('unicode-escape')
-            weibo_count = re.findall('\"count\"\:\"([\d\u4e07]+?)\"\,(\"page_type\"\:\"0\"\,)?\"type\"\:\"weibo\"', userinfoText)[0][0]
-            follow_count = re.findall('\"count\"\:\"([\d\u4e07]+?)\"\,(\"page_type\"\:\"0\"\,)?\"type\"\:\"attention\"', userinfoText)[0][0]
-            fans_count = re.findall('\"count\"\:\"([\d\u4e07]+?)\"\,(\"page_type\"\:\"0\"\,)?\"type\"\:\"fans\"', userinfoText)[0][0]
-            like_count = re.findall('\"count\"\:\"([\d\u4e07]+?)\"\,(\"page_type\"\:\"0\"\,)?\"type\"\:\"like\"', userinfoText)[0][0]
-            topic_count = re.findall('\"count\"\:\"([\d\u4e07]+?)\"\,(\"page_type\"\:\"0\"\,)?\"type\"\:\"topic\"', userinfoText)[0][0]
+            # self.containerid = re.findall('containerid=(\d+?)&',requests.get('http://m.weibo.cn/u/1618051664?').text)[0]
+            self.screen_name = jsonContent['user']['screen_name']
+            self.profile_image_url = jsonContent['user']['profile_image_url']
+            self.profile_url = jsonContent['user']['profile_url']
+            self.verified = jsonContent['user']['verified']
+            self.verified_reason = jsonContent['user']['verified_reason']
+            self.description = jsonContent['user']['description']
+            self.verified_type = jsonContent['user']['verified_type']
+            self.gender = jsonContent['user']['gender']
+            userinfoText = requests.get('http://m.weibo.cn/page/card?itemid=100505' + str(self.id) + '_-_WEIBO_INDEX_PROFILE_APPS&callback=s').text.encode().decode('unicode-escape')
+            self.weibo_count = re.findall('\"count\"\:\"([\d\u4e07]+?)\"\,(\"page_type\"\:\"0\"\,)?\"type\"\:\"weibo\"', userinfoText)[0][0]
+            self.follow_count = re.findall('\"count\"\:\"([\d\u4e07]+?)\"\,(\"page_type\"\:\"0\"\,)?\"type\"\:\"attention\"', userinfoText)[0][0]
+            self.fans_count = re.findall('\"count\"\:\"([\d\u4e07]+?)\"\,(\"page_type\"\:\"0\"\,)?\"type\"\:\"fans\"', userinfoText)[0][0]
+            self.like_count = re.findall('\"count\"\:\"([\d\u4e07]+?)\"\,(\"page_type\"\:\"0\"\,)?\"type\"\:\"like\"', userinfoText)[0][0]
+            self.topic_count = re.findall('\"count\"\:\"([\d\u4e07]+?)\"\,(\"page_type\"\:\"0\"\,)?\"type\"\:\"topic\"', userinfoText)[0][0]
+            self.state = True
         except Exception as EWeiboUser:
             logging.debug('Error in WeiboUser: ' + str(EWeiboUser))
             
-class Message:
+    def printUserinfo(self):
+        if (self.state == True):
+            print ('-->Userinfo Start<--')
+            print ('id----------------->' + str(self.id))
+            print ('screen_name-------->' + str(self.screen_name))
+            print ('profile_image_url-->' + str(self.profile_image_url))
+            print ('profile_url-------->' + str(self.profile_url))
+            print ('verified----------->' + str(self.verified))
+            print ('verified_reason---->' + str(self.verified_reason))
+            print ('description-------->' + str(self.description))
+            print ('verified_type------>' + str(self.verified_type))
+            print ('gender------------->' + str(self.gender))
+            print ('weibo_count-------->' + str(self.weibo_count))
+            print ('follow_count------->' + str(self.follow_count))
+            print ('fans_count--------->' + str(self.fans_count))
+            print ('like_count--------->' + str(self.like_count))
+            print ('topic_count-------->' + str(self.topic_count))
+            print ('fans_count--------->' + str(self.fans_count))
+            print ('--> Userinfo End <--')
+        else:
+            if (DEBUG):
+                print ('Userinfo State: ' + str(self.state))
+
+
+class WeiboMessage:
     '''eg.
         id:123123123
         type: weibo
-        created_timestamp: yyyy-yy-dd
+        created_timestamp: 0
         author: foreign-key--userid
         text: whoami
         source:weibo.com
@@ -99,23 +124,43 @@ class Message:
         logging.debug('Message Class init.')
         self.state = False
         self.rawContent = content
+        content = content
         self.Type = str(Type)
         if ('weibo' in Type):
             try:
                 self.id = content['mblog']['id']
-                self.type = 'weibo'
                 self.created_timestamp = content['mblog']['created_timestamp']
                 self.author = content['mblog']['user']['id']  # foreign key
                 self.text = content['mblog']['text']
                 self.pic_ids = content['mblog']['pic_ids']
                 self.source = content['mblog']['source']
-                self.link = content['scheme']
+                self.selfLink = content['scheme']
                 self.reposts_count = content['mblog']['reposts_count']
                 self.comments_count = content['mblog']['comments_count']
                 self.attitudes_count = content['mblog']['attitudes_count']
                 self.state = True
-            except Exception as eMessage:
-                logging.error('Error in Init message from weibo:' + str(eMessage))
+                self.topicURL = None
+                self.topic = None
+                self.shortLink = []
+                self.fullLink = []
+                self.linkType = []
+                try:
+                    topicFind = re.findall('<a class="k" href="([/%\w\W\d\?=]+)">#(.+)#<\/a>', s)
+                    if (topicFind):
+                        self.topicURL = topicFind[0][0]
+                        self.topic = topicFind[0][1]
+
+
+                    linkFind = re.findall('<a data-url="(http://t.cn/[\w\W\d]+?)" href="(.*?)" ><i.*?</i><span class="surl-text">(.*?)</span></a>', s)
+                    if (linkFind):
+                        for one in linkFind:
+                            self.shortLink.append(one[0])
+                            self.fullLink.append(one[1].replace('http://weibo.cn/sinaurl?u=','http://'))
+                            self.linkType.append(one[2])
+                except Exception as eWeiboMessageNoTopicOrLink:
+                    logging.debug('Error in find topic or link in weibo message' + str(eWeiboMessageNoTopicOrLink))
+            except Exception as eWeiboMessage:
+                logging.error('Error in Init weibo message:' + str(eWeiboMessage))
                 logging.debug(content)
         else:
             logging.error('Error in Init message, cannot find.')
@@ -126,20 +171,26 @@ class Message:
     def getType(self):
         return self.Type
     
-    def printMessage(self):
+    def printWeiboMessage(self):
         if (self.state == True):
             print ('Message Type: ' + self.Type)
-            print ('Message State: ' + str(self.state))
             print ('-->Message Start<--')
             print ('id---------------->' + str(self.id))
-            print ('type-------------->' + self.type)
             print ('created_timestamp->' + str(self.created_timestamp))
             print ('author------------>' + str(self.author))
             print ('text-------------->' + self.text)
             print ('source------------>' + self.source)
             if (len(self.pic_ids) > 0):
                 print ('pic_ids----------->' + '\npic_ids----------->'.join(self.pic_ids))
-            print ('link-------------->' + self.link)
+            if self.topicURL:
+                print ('topicURL---------->' + str(self.topicURL))
+                print ('topic------------->' + str(self.topic))
+            for i in range(0, len(self.shortLink), 1):
+                print ('>>shortLink------->' + self.shortLink[i])
+                print ('>>fullLink-------->' + self.fullLink[i])
+                print ('>>linkType-------->' + self.linkType[i])
+
+            print ('selfLink---------->' + self.selfLink)
             print ('reposts_count----->' + str(self.reposts_count))
             print ('comments_count---->' + str(self.comments_count))
             print ('attitudes_count--->' + str(self.attitudes_count))
@@ -176,27 +227,23 @@ class Weibo:
                     pass
                 elif (card['itemid'] == 'hotmblog'):
                     for messageI in card['card_group']:
-                        if ('mblog' not in message): continue
-                        message = Message('weibo_hotmblog', messageI)
+                        if ('mblog' not in messageI): continue
+                        message = WeiboMessage('weibo_hotmblog', messageI)
                         self.hotmblog.append(message)
                 elif (card['itemid'] == 'mblog'):
                     for messageI in card['card_group']:
                         # if ('mblog' not in message): continue
-                        message = Message('weibo_mblog', messageI)
+                        message = WeiboMessage('weibo_mblog', messageI)
                         self.mblog.append(message)
                 elif (card['itemid'] == 'more_hot_mblog'):
                     for messageI in card['card_group']:
-                        if ('mblog' not in message): continue
-                        message = Message('weibo_more_hot_mblog', messageI)
+                        if ('mblog' not in messageI): continue
+                        message = WeiboMessage('weibo_more_hot_mblog', messageI)
                         self.more_hot_mblog.append(message)
                 elif (card['itemid'] == 'user'):
                     for userI in card['card_group']:    
                         user = WeiboUser(userI)
                         self.usersList.append(user)
-                    # for message in card['card_group']:
-                    #     # if ('mblog' not in message): continue
-                    #     message = Message('weibo_mblog', message)
-                    #     self.mblog.append(message)
                 else:
                     logging.error('New itemid in cards, please edit it: ' + card['itemid'])
         except Exception as eWeibo:
@@ -205,14 +252,15 @@ class Weibo:
     def handle(self, method = 'print'):
         if (method == 'print'):
             for i in self.hotmblog:
-                i.printMessage()
+                i.printWeiboMessage()
             # for i in self.follow_mblog:
             #     i.printMessage()
             for i in self.mblog:
-                i.printMessage()
+                i.printWeiboMessage()
             for i in self.more_hot_mblog:
-                i.printMessage()
-
+                i.printWeiboMessage()
+            for i in self.usersList:
+                i.printWeiboMessage()
 
 class WebsiteFactory:
     def __init__(self):
@@ -499,14 +547,6 @@ class WebsiteWeiboCom(WebsiteFactory):
                 Type = 'all'
                 typeCode = '1'
                 logging.error('method error:' + str(Type) + ' is invalid, use \'all\'')
-            # queryURL = 'http://m.weibo.cn/searchs/result'
-            # params = {
-            #     'type':Type,
-            #     'queryVal':str(query)
-            # }
-            # queryANS = self.request.get(queryURL, params = params)
-            # print (queryANS.text)
-
             queryURL = 'http://m.weibo.cn/page/pageJson'
             params = {
                 'containerid':'100103type=' + typeCode + '&q=' + str(query),
@@ -521,7 +561,7 @@ class WebsiteWeiboCom(WebsiteFactory):
                 'page':1,
             }
             queryANS = self.request.get(queryURL, params = params)
-            result = queryANS.text.replace('false', 'False').replace('true', 'True').replace('null', 'None')
+            result = queryANS.text.replace('false', 'False').replace('true', 'True').replace('null', 'None').replace('\/', '/')
             result = eval(result)
             return Weibo(result)
         except Exception as eSearch:
@@ -603,7 +643,7 @@ def main():
 
     eg = WebsiteFactory().selector('weibo.com')
     eg.login('weibo@lc4t.me', 'lc4t@2016')
-    ans = eg.search('user', '新闻')
+    ans = eg.search('all', '新闻')
     ans.handle()
 
 if __name__ == '__main__':
